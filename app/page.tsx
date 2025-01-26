@@ -81,7 +81,7 @@ export default function Home() {
     }
     try {
       const paymasterData = await callZyfiApi(
-        account.address, // OR session.signer,
+        account.address, // OR maybe session.signer,
         "0xC4822AbB9F05646A9Ce44EFa6dDcda0Bf45595AA",
         encodeFunctionData({
           abi: MINT_ABI,
@@ -94,7 +94,7 @@ export default function Home() {
 
       try {
         await sessionClient.sendTransaction({
-          account: account.address!, // OR sessionClient.account
+          account: account.address!, // OR maybe sessionClient.account
           to: "0xC4822AbB9F05646A9Ce44EFa6dDcda0Bf45595AA",
           data: encodeFunctionData({
             abi: MINT_ABI,
