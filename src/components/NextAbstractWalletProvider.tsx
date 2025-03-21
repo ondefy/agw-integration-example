@@ -12,6 +12,7 @@ export default function AbstractWalletWrapper({
   const paymaster = createZyfiPaymaster({
     apiKey: "c187cf5a-c233-43f1-8bdb-0fe495138dce",
     sponsorshipRatio: 100,
+    apiUrl: "https://staging.api.zyfi.org/api/"
   });
   return (
     <AbstractWalletProvider chain={abstractTestnet} customPaymasterHandler={paymaster}>
