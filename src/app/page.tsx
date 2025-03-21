@@ -3,118 +3,31 @@
 import Image from "next/image";
 import {
   useLoginWithAbstract,
-  useWriteContractSponsored,
+  useGlobalWalletSignerClient,
 } from "@abstract-foundation/agw-react";
 import {
   useAccount,
-  useSendTransaction,
-  useWaitForTransactionReceipt,
+  useWriteContract,
 } from "wagmi";
-import { getGeneralPaymasterInput } from "viem/zksync";
-import { parseAbi, encodeFunctionData } from "viem";
+import { parseAbi } from "viem";
 
 export default function Home() {
+  const { data: signer, error } = useGlobalWalletSignerClient();
   const { login, logout } = useLoginWithAbstract();
   const { address, status } = useAccount();
-  const { sendTransaction, isPending } = useSendTransaction();
-  const { writeContractSponsored, data: transactionHash } =
-    useWriteContractSponsored();
-  const { data: transactionReceipt } = useWaitForTransactionReceipt({
-    hash: transactionHash,
-  });
+  const { writeContract, data, isSuccess, isPending } =
+    useWriteContract();
 
-  const callZyfiApi = async (
-    from: any,
-    to: string,
-    calldata: string,
-    value: string,
-    sponsorshipRatio: number
-  ) => {
-    try {
-      // API Payload
-      const payload = {
-        // feeTokenAddress: tokenAddress,
-        sponsorshipRatio: 100,
-        chainId: 11124,
-        replayLimit: 5,
-        txData: {
-          from,
-          to,
-          data: calldata,
-          value,
-        },
-      };
-      console.log("API payload", payload);
-
-      // API answer
-      const response = await fetch(
-        "https://api.zyfi.org/api/erc20_sponsored_paymaster/v1",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": `${process.env.NEXT_PUBLIC_ZYFI_API_KEY}`, // Replace by your API Key
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      throw new Error(`Zyfi API Error`);
-    }
-  };
   const handleSubmitTransaction = async () => {
     let contractAddress = "0xC4822AbB9F05646A9Ce44EFa6dDcda0Bf45595AA";
     let contractAbi = parseAbi(["function mint(address,uint256) external"]);
-    const encodedData = encodeFunctionData({
+    writeContract({
       abi: contractAbi,
+      account: address,
+      address: contractAddress as `0x${string}`,
       functionName: "mint",
-      args: [address!, BigInt(1)],
+      args: [address!, BigInt(1)]
     });
-    try {
-      const response = await callZyfiApi(
-        address,
-        contractAddress,
-        encodedData,
-        "0",
-        100
-      );
-      console.log(
-        response.txData.customData.paymasterParams.paymaster,
-        response.txData.customData.paymasterParams.paymasterInput,
-        response.txData.maxFeePerGas,
-        response.txData.gasLimit
-      );
-      writeContractSponsored({
-        abi: contractAbi,
-        account: address,
-        address: contractAddress as `0x${string}`,
-        functionName: "mint",
-        args: [address!, BigInt(1)],
-        paymaster: response.txData.customData.paymasterParams.paymaster,
-        paymasterInput:
-          response.txData.customData.paymasterParams.paymasterInput,
-        maxPriorityFeePerGas: BigInt(0),
-        maxFeePerGas: BigInt(response.txData.maxFeePerGas),
-        gas: BigInt(response.gasLimit),
-      });
-    } catch (e) {
-      console.log(e);
-      writeContractSponsored({
-        abi: contractAbi,
-        address: contractAddress as `0x${string}`,
-        functionName: "mint",
-        args: [address!, BigInt(1)],
-        paymaster: "0x5407B5040dec3D339A9247f3654E59EEccbb6391",
-        paymasterInput: getGeneralPaymasterInput({
-          innerInput: "0x",
-        }),
-      });
-    }
   };
 
   return (
@@ -188,12 +101,12 @@ export default function Home() {
                     <button
                       className={`rounded-full border border-solid transition-colors flex items-center justify-center text-white gap-2 text-sm h-10 px-5 font-[family-name:var(--font-roobert)] w-full sm:flex-1
                         ${
-                          !sendTransaction || isPending
+                          isPending
                             ? "bg-gray-500 cursor-not-allowed opacity-50"
                             : "bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 border-transparent"
                         }`}
                       onClick={handleSubmitTransaction}
-                      disabled={!writeContractSponsored || isPending}
+                      disabled={!writeContract || isPending}
                     >
                       <svg
                         className="w-4 h-4 flex-shrink-0"
@@ -212,18 +125,17 @@ export default function Home() {
                       <span className="w-full text-center">Submit tx</span>
                     </button>
                   </div>
-                  {!!transactionReceipt && (
+                  {isSuccess && (
                     <a
-                      href={`https://explorer.testnet.abs.xyz/tx/${transactionReceipt?.transactionHash}`}
+                      href={`https://explorer.testnet.abs.xyz/tx/${data}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
                       <p className="text-sm sm:text-base font-medium font-[family-name:var(--font-roobert)] mb-1">
-                        Transaction Status: {transactionReceipt?.status}
+                        Transaction Status: Submitted
                       </p>
                       <p className="text-xs text-gray-400 font-mono">
-                        {transactionReceipt?.transactionHash?.slice(0, 8)}...
-                        {transactionReceipt?.transactionHash?.slice(-6)}
+                        {data?.slice(0, 8)}...{data?.slice(-6)}
                       </p>
                     </a>
                   )}

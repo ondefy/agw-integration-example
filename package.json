@@ -9,13 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@abstract-foundation/agw-client": "^1.0.0",
-    "@abstract-foundation/agw-react": "^1.0.0",
+    "@abstract-foundation/agw-client": "1.5.0",
+    "@abstract-foundation/agw-react": "1.5.6-beta.2",
     "next": "14.2.13",
     "react": "^18",
     "react-dom": "^18",
+    "viem": "^2.23.13",
     "wagmi": "^2.12.14",
-    "viem": "^2.21.26"
+    "zyfi-agw-plugin": "^1.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
