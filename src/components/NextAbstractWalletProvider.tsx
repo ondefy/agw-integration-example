@@ -3,6 +3,8 @@
 import { AbstractWalletProvider } from "@abstract-foundation/agw-react";
 import { abstractTestnet } from "viem/chains";
 import { createZyfiPaymaster } from 'zyfi-agw-plugin';
+import dotenv from 'dotenv';
+dotenv.config();
 
 export default function AbstractWalletWrapper({
   children,
@@ -10,7 +12,7 @@ export default function AbstractWalletWrapper({
   children: React.ReactNode;
 }) {
   const paymaster = createZyfiPaymaster({
-    apiKey: "c187cf5a-c233-43f1-8bdb-0fe495138dce",
+    apiKey: process.env.NEXT_PUBLIC_ZYFI_API_KEY || '',
     sponsorshipRatio: 100,
     apiUrl: "https://staging.api.zyfi.org/api/"
   });

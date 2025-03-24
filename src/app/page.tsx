@@ -19,8 +19,8 @@ export default function Home() {
     useWriteContract();
 
   const handleSubmitTransaction = async () => {
-    let contractAddress = "0xC4822AbB9F05646A9Ce44EFa6dDcda0Bf45595AA";
-    let contractAbi = parseAbi(["function mint(address,uint256) external"]);
+    const contractAddress = "0xC4822AbB9F05646A9Ce44EFa6dDcda0Bf45595AA";
+    const contractAbi = parseAbi(["function mint(address,uint256) external"]);
     writeContract({
       abi: contractAbi,
       account: address,
