@@ -72,7 +72,7 @@ export default function Home() {
       apiKey: process.env.NEXT_PUBLIC_ZYFI_API_KEY!,
       replayLimit: 5,
       generalFlow: true,
-      apiUrl: 'https://staging.api.zyfi.org/api/'
+      apiUrl: 'https://api.zyfi.org/api/'
     });
 
     const defaultPaymaster: any = async (args: any) => ({
