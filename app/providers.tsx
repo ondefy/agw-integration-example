@@ -8,6 +8,8 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { AbstractWalletProvider } from "@abstract-foundation/agw-react";
 import { abstractTestnet } from "viem/chains";
 import { createZyfiPaymaster } from "zyfi-agw-plugin";
+import dotenv from 'dotenv';
+dotenv.config();
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -25,9 +27,9 @@ declare module "@react-types/shared" {
 export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
   const paymaster = createZyfiPaymaster({
-    apiKey: "c187cf5a-c233-43f1-8bdb-0fe495138dce",
+    apiKey: process.env.NEXT_PUBLIC_ZYFI_API_KEY || '',
     sponsorshipRatio: 100,
-    apiUrl: "https://staging.api.zyfi.org/api/"
+    apiUrl: "https://api.zyfi.org/api/"
   });
 
   return (

@@ -9,8 +9,8 @@
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
   },
   "dependencies": {
-    "@abstract-foundation/agw-client": "1.5.1-beta.3",
-    "@abstract-foundation/agw-react": "1.5.6-beta.4",
+    "@abstract-foundation/agw-client": "1.6.0",
+    "@abstract-foundation/agw-react": "1.6.0",
     "@heroui/button": "2.2.9",
     "@heroui/code": "2.2.6",
     "@heroui/input": "2.4.9",
@@ -25,6 +25,7 @@
     "@react-aria/ssr": "3.9.7",
     "@react-aria/visually-hidden": "3.8.18",
     "clsx": "2.1.1",
+    "dotenv": "^16.4.7",
     "framer-motion": "11.13.1",
     "intl-messageformat": "^10.5.0",
     "next": "15.0.4",
