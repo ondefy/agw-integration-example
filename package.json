@@ -9,8 +9,8 @@
     "lint": "eslint . --ext .ts,.tsx -c .eslintrc.json --fix"
   },
   "dependencies": {
-    "@abstract-foundation/agw-client": "^1.0.0",
-    "@abstract-foundation/agw-react": "^1.0.0",
+    "@abstract-foundation/agw-client": "1.5.1-beta.3",
+    "@abstract-foundation/agw-react": "1.5.6-beta.4",
     "@heroui/button": "2.2.9",
     "@heroui/code": "2.2.6",
     "@heroui/input": "2.4.9",
@@ -33,7 +33,8 @@
     "react-dom": "18.3.1",
     "react-icons": "^5.4.0",
     "viem": "^2.22.14",
-    "wagmi": "^2.14.9"
+    "wagmi": "^2.14.9",
+    "zyfi-agw-plugin": "^1.0.1"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "15.0.4",

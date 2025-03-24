@@ -1,8 +1,10 @@
 "use client";
 
 import {
+  useAbstractClient,
   useCreateSession,
   useLoginWithAbstract,
+  useWriteContractSponsored,
 } from "@abstract-foundation/agw-react";
 import { useAccount } from "wagmi";
 import { Button } from "@heroui/button";
@@ -19,8 +21,12 @@ import { toFunctionSelector, parseEther, encodeFunctionData } from "viem";
 import { useState } from "react";
 import { abstractTestnet } from "viem/chains";
 import { MINT_ABI } from "./abi";
+import { getGeneralPaymasterInput } from "viem/zksync";
+import { createAbstractClient } from "@abstract-foundation/agw-client";
+import { createZyfiPaymaster } from "zyfi-agw-plugin";
 
 export default function Home() {
+  const { data: agwClient } = useAbstractClient();
   const { login, logout } = useLoginWithAbstract();
   const { createSessionAsync } = useCreateSession();
   const [session, setSession] = useState<SessionConfig>();
@@ -29,11 +35,11 @@ export default function Home() {
   const [error, setError] = useState(false);
 
   const account = useAccount();
-
   async function handleCreateSession() {
     const sessionPrivateKey = generatePrivateKey();
     const sessionSigner = privateKeyToAccount(sessionPrivateKey);
 
+    // console.log(paymasterHandler);
     const { session, transactionHash } = await createSessionAsync({
       session: {
         signer: sessionSigner.address,
@@ -62,12 +68,25 @@ export default function Home() {
 
     console.log("Session created", session, transactionHash);
 
+    const zyfiPaymaster = createZyfiPaymaster({
+      apiKey: process.env.NEXT_PUBLIC_ZYFI_API_KEY!,
+      replayLimit: 5,
+      generalFlow: true,
+      apiUrl: 'https://staging.api.zyfi.org/api/'
+    });
+
+    const defaultPaymaster: any = async (args: any) => ({
+      paymaster: "0x5407B5040dec3D339A9247f3654E59EEccbb6391",
+      paymasterInput: getGeneralPaymasterInput({ innerInput: '0x' }),
+    })
+
     // Create a session client
     const sessionClient = createSessionClient({
       account: account.address!,
       chain: abstractTestnet,
       signer: sessionSigner,
       session: session,
+      paymasterHandler: zyfiPaymaster,
     });
 
     setSessionClient(sessionClient);
@@ -80,18 +99,6 @@ export default function Home() {
       return;
     }
     try {
-      const paymasterData = await callZyfiApi(
-        account.address, // OR maybe session.signer,
-        "0xC4822AbB9F05646A9Ce44EFa6dDcda0Bf45595AA",
-        encodeFunctionData({
-          abi: MINT_ABI,
-          functionName: "mint",
-          args: [session.signer, BigInt(1)],
-        }),
-        "0"
-      );
-      console.log(paymasterData, sessionClient);
-
       try {
         await sessionClient.sendTransaction({
           account: account.address!, // OR maybe sessionClient.account
@@ -102,12 +109,6 @@ export default function Home() {
             args: [session.signer, BigInt(1)],
           }),
           chain: abstractTestnet,
-          paymaster: paymasterData.txData.customData.paymasterParams.paymaster,
-          paymasterInput:
-            paymasterData.txData.customData.paymasterParams.paymasterInput,
-          maxPriorityFeePerGas: BigInt(0),
-          maxFeePerGas: BigInt(paymasterData.txData.maxFeePerGas),
-          gasLimit: BigInt(paymasterData.gasLimit),
         });
       } catch (e) {
         console.error("Error sending transaction");
@@ -122,50 +123,6 @@ export default function Home() {
       console.error(e);
       setError(true);
       return;
-    }
-  }
-
-  async function callZyfiApi(
-    from: any,
-    to: string,
-    calldata: string,
-    value: string
-  ) {
-    try {
-      // API Payload
-      const payload = {
-        // feeTokenAddress: tokenAddress,
-        sponsorshipRatio: 100,
-        chainId: 11124,
-        replayLimit: 5,
-        txData: {
-          from,
-          to,
-          data: calldata,
-          value,
-        },
-      };
-      console.log("API payload", payload);
-
-      // API answer
-      const response = await fetch(
-        "https://api.zyfi.org/api/erc20_sponsored_paymaster/v1",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": `${process.env.NEXT_PUBLIC_ZYFI_API_KEY}`, // Replace by your API Key
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      throw new Error(`Zyfi API Error`);
     }
   }
 
